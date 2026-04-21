@@ -1,0 +1,21 @@
+{
+  "short_name": "Mazboy",
+  "name": "Pancong Lumer Mazboy - Internal",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://via.placeholder.com/512",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#3E2723",
+  "display": "standalone",
+  "theme_color": "#5D4037",
+  "description": "Sistem Laporan Internal Pancong Lumer Mazboy"
+}
