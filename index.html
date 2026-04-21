@@ -1,0 +1,205 @@
+<html lang="id">
+<head>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5D4037">
+
+<script>
+  // Mendaftarkan Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Aplikasi siap!'))
+        .catch(err => console.log('Gagal daftar:', err));
+    });
+  }
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Harian - PANCONG LUMER MAZBOY</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header">
+    <div style="font-size: 0.7rem; letter-spacing: 3px;">PANCONG LUMER MAZBOY</div>
+    <h1 style="margin: 5px 0; font-size: 1.5rem;">Sistem Laporan Internal</h1>
+</div>
+
+<div class="tab-nav">
+    <button class="tab-btn active" onclick="openTab(event, 'tab-absen')">📍 Check-In</button>
+    <button class="tab-btn" onclick="openTab(event, 'tab-penjualan')">🥞 Pancong</button>
+    <button class="tab-btn" onclick="openTab(event, 'tab-tako')">🐙 Takoyaki</button>
+    <button class="tab-btn" onclick="openTab(event, 'tab-kopi')">☕ Kopi Rimba</button>
+    <button class="tab-btn" onclick="openTab(event, 'tab-stok')">📦 Stok</button>
+</div>
+
+<div class="container">
+    ...
+
+    <div id="tab-penjualan" class="tab-content">
+        <div class="card">
+            <div class="card-title">🥞 Laporan Penjualan Pancong</div>
+            <div id="batch-wrapper-pancong"></div>
+            <button class="btn btn-add" onclick="addNewBatch('pancong')">+ Tambah Adonan Pancong</button>
+        </div>
+        <div class="card">
+            <div class="card-title">💰 Rekap Keuangan Pancong</div>
+            <label>Total Pengeluaran (Rp)</label>
+            <input type="text" id="p_keluar_pancong" placeholder="Rp 0" onkeyup="formatRupiahInput(this); calculateTotal('pancong')">
+            <label style="margin-top:10px; display:block;">Total Setoran Pancong</label>
+            <input type="text" id="total-display-pancong" readonly class="total-bold" placeholder="Rp 0">
+        </div>
+        <button class="btn btn-gen" onclick="generateSales('pancong')">⚡ KIRIM LAPORAN PANCONG</button>
+    </div>
+
+    <div id="tab-tako" class="tab-content">
+        <div class="card">
+            <div class="card-title">🐙 Laporan Penjualan Takoyaki</div>
+            <div id="batch-wrapper-tako"></div>
+            <button class="btn btn-add" onclick="addNewBatch('tako')">+ Tambah Adonan Takoyaki</button>
+        </div>
+        <div class="card">
+            <div class="card-title">💰 Rekap Keuangan Takoyaki</div>
+            <label>Total Pengeluaran (Rp)</label>
+            <input type="text" id="p_keluar_tako" placeholder="Rp 0" onkeyup="formatRupiahInput(this); calculateTotal('tako')">
+            <label style="margin-top:10px; display:block;">Total Setoran Takoyaki</label>
+            <input type="text" id="total-display-tako" readonly class="total-bold" placeholder="Rp 0">
+        </div>
+        <button class="btn btn-gen" style="background:#e67e22" onclick="generateSales('tako')">⚡ KIRIM LAPORAN TAKOYAKI</button>
+    </div>
+
+    <div id="tab-kopi" class="tab-content">
+        <div class="card">
+            <div class="card-title">☕ Laporan Penjualan Kopi Rimba</div>
+            <div id="batch-wrapper-kopi"></div>
+            <button class="btn btn-add" onclick="addNewBatch('kopi')">+ Tambah Sesi Kopi</button>
+        </div>
+        <div class="card">
+            <div class="card-title">💰 Rekap Keuangan Kopi Rimba</div>
+            <label>Total Pengeluaran (Rp)</label>
+            <input type="text" id="p_keluar_kopi" placeholder="Rp 0" onkeyup="formatRupiahInput(this); calculateTotal('kopi')">
+            <label style="margin-top:10px; display:block;">Total Setoran Kopi</label>
+            <input type="text" id="total-display-kopi" readonly class="total-bold" placeholder="Rp 0">
+        </div>
+        <button class="btn btn-gen" style="background:#2ecc71" onclick="generateSales('kopi')">⚡ KIRIM LAPORAN KOPI</button>
+    </div>
+    
+    ...
+</div>
+  
+  <div id="tab-absen" class="tab-content active">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="avatar-circle">
+                    <img src="https://via.placeholder.com/80" id="display-avatar" alt="Staff">
+                </div>
+                <div class="profile-info">
+                    <p class="greeting">Selamat Bekerja,</p>
+                    <h2 id="display-name">Nama Staff</h2>
+                    <p id="display-role">Outlet Belum Dipilih</p>
+                </div>
+            </div>
+            <div class="profile-meta">
+                <div class="meta-item"><span>🕒 Waktu:</span> <strong id="live-clock">00:00 WIB</strong></div>
+                <div class="meta-item"><span>📍 Lokasi:</span> <strong id="current-location">Terdeteksi...</strong></div>
+            </div>
+        </div>
+
+        <form id="absenForm">
+            <div class="card absensi-form-card">
+                <div class="card-title" style="text-align: center; border: none;">FORM KEHADIRAN</div>
+                <div class="input-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="p_nama" placeholder="Nama Anda" oninput="updateProfileDisplay()" required>
+                </div>
+                <div class="input-group">
+                    <label>Outlet / Jabatan</label>
+                    <select id="p_outlet" onchange="updateProfileDisplay()" required>
+                        <option value="">-- Pilih Outlet --</option>
+                        <option value="Kasir - Outlet A">Kasir - Pancong</option>
+                        <option value="Kasir - Outlet B">Kasir - Takoyaki</option>
+                        <option value="Kasir - Outlet C">Kasir - Kopi Rimba</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Foto Bukti Check-In</label>
+                    <input type="file" id="p_foto" accept="image/*" capture="camera" hidden>
+                    <button type="button" class="btn-upload" onclick="document.getElementById('p_foto').click()">📷 Ambil Foto / Upload</button>
+                    <p id="file-name" style="font-size: 0.7rem; color: #666; margin-top: 5px; text-align: center;">Bukti foto</p>
+                </div>
+                <div class="input-group">
+                    <label>Modal Awal (Cash)</label>
+                    <input type="text" id="p_rupiah" placeholder="Rp 0" onkeyup="formatRupiahInput(this)" required>
+                </div>
+                <input type="hidden" id="p_time">
+                <input type="hidden" id="p_tgl">
+                <button type="submit" class="btn-checkin">KONFIRMASI CHECK-IN</button>
+            </div>
+        </form>
+        <div id="notif-absen" style="display:none;" class="notif-success">✓ Absensi Berhasil Terkirim!</div>
+    </div>
+
+    <div id="tab-penjualan" class="tab-content">
+        <div class="card">
+            <div class="card-title">🥞 Laporan Adonan & Penjualan</div>
+            <div id="batch-wrapper"></div>
+            <button class="btn btn-add" onclick="addNewBatch()">+ Tambah Adonan Baru</button>
+        </div>
+        <div class="card">
+            <div class="card-title">💰 Rekap Keuangan Akhir</div>
+            <label>Total Pengeluaran (Rp)</label>
+            <input type="text" id="p_keluar" placeholder="Rp 0" onkeyup="formatRupiahInput(this); calculateTotal()">
+            <label style="margin-top:10px; display:block;">Total Setoran (Net)</label>
+            <input type="text" id="total-display" readonly class="total-bold" placeholder="Rp 0">
+        </div>
+        <button class="btn btn-gen" onclick="generateSales()">⚡ GENERATE & KIRIM WHATSAPP</button>
+    </div>
+
+    <div id="tab-stok" class="tab-content">
+        <div class="card">
+            <div class="card-title">📦 Stok Sisa</div>
+            <label>Adonan (Pack)</label><input type="number" id="s_adon">
+            <label>Telur (Butir)</label><input type="number" id="s_telur">
+        </div>
+        <button class="btn btn-gen" style="background:#FF9800" onclick="alert('Fitur stok segera hadir!')">📦 GENERATE STOK</button>
+    </div>
+</div>
+
+<div id="calc-container" class="float-calc">
+    <div class="calc-hp" id="calc-box" style="display:none;">
+        <div class="calc-screen">
+            <div id="calc-history"></div>
+            <div id="calc-display">0</div>
+        </div>
+        <div class="calc-buttons">
+            <button onclick="calcClear()" style="color: #ff3b30; font-weight: bold;">AC</button>
+            <button onclick="calcDel()">⌫</button>
+            <button onclick="calcInput('%')">%</button>
+            <button onclick="calcInput('/')" style="background:#FF9F0A">÷</button>
+
+            <button onclick="calcInput('7')">7</button>
+            <button onclick="calcInput('8')">8</button>
+            <button onclick="calcInput('9')">9</button>
+            <button onclick="calcInput('*')" style="background:#FF9F0A">×</button>
+
+            <button onclick="calcInput('4')">4</button>
+            <button onclick="calcInput('5')">5</button>
+            <button onclick="calcInput('6')">6</button>
+            <button onclick="calcInput('-')" style="background:#FF9F0A">−</button>
+
+            <button onclick="calcInput('1')">1</button>
+            <button onclick="calcInput('2')">2</button>
+            <button onclick="calcInput('3')">3</button>
+            <button onclick="calcInput('+')" style="background:#FF9F0A">+</button>
+
+            <button onclick="calcInput('0')" style="grid-column: span 2; text-align: left; padding-left: 25px; border-radius: 30px; width: 100%;">0</button>
+            <button onclick="calcInput('.')">.</button>
+            <button onclick="calcEqual()" style="background:#34c759">=</button>
+        </div>
+    </div>
+    <button class="btn-float-toggle" onclick="toggleCalc()">🧮</button>
+</div>
+  
+<script src="script.js"></script>
+</body>
+</html>
